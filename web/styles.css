@@ -1,0 +1,214 @@
+:root {
+  color-scheme: dark;
+  /* Palette provided by user */
+  --c-yellow: #FFD204;
+  --c-green: #00C587;
+  --c-orange: #FF803A;
+  --c-pink: #FFB8D2;
+  --c-cyan: #01CDEB;
+  --c-dark: #2C2A29;
+  --c-light: #F7F7F7;
+
+  --bg: var(--c-dark);
+  --bg-2: #201e1d;
+  --card: rgba(247, 247, 247, 0.04);
+  --stroke: rgba(247, 247, 247, 0.06);
+  --text: var(--c-light);
+  --muted: #c9c5c3;
+  --accent: var(--c-green);
+  --accent-2: var(--c-orange);
+  --danger: #ff6b6b;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(1, 205, 235, 0.06), transparent 20%),
+    radial-gradient(circle at top right, rgba(255, 210, 4, 0.06), transparent 18%),
+    linear-gradient(160deg, var(--bg), var(--bg-2));
+}
+
+.shell {
+  width: min(1120px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+  border-radius: 24px;
+}
+
+.hero {
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--c-yellow);
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+
+h1, h2, p { margin-top: 0; }
+
+h1 {
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  line-height: 0.96;
+  margin-bottom: 12px;
+}
+
+.lede {
+  color: var(--muted);
+  font-size: 1.02rem;
+  max-width: 60ch;
+}
+
+.status-grid,
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.status-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+}
+
+.status-grid div,
+.metric {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.status-grid span,
+.metric span,
+label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-bottom: 6px;
+}
+
+.status-grid strong,
+.metric strong {
+  display: block;
+  font-size: 1.05rem;
+  word-break: break-word;
+}
+
+.grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.panel {
+  padding: 22px;
+}
+
+.deploy-settings {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+button {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, var(--accent), var(--c-cyan));
+  color: var(--c-dark);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+button:hover { transform: translateY(-1px); }
+button:active { transform: translateY(1px); }
+button.secondary { background: linear-gradient(135deg, var(--accent-2), var(--c-orange)); color: var(--c-dark); }
+button.ghost { background: rgba(255, 255, 255, 0.04); color: var(--text); border: 1px solid rgba(255,255,255,0.04); }
+
+.input-group { display:flex; gap:8px; align-items:center; }
+.input-group input { padding:10px 12px; border-radius:12px; border:1px solid var(--stroke); background: rgba(255,255,255,0.02); color:var(--text); min-width:100px; }
+.input-group input::placeholder { color: rgba(247,247,247,0.5); }
+
+.metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.wallet-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.wallet-card {
+  padding: 22px;
+}
+
+.kv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.kv-grid div {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.kv-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.84rem;
+  margin-bottom: 6px;
+}
+
+.kv-grid strong {
+  display: block;
+  word-break: break-word;
+  font-size: 1rem;
+}
+
+.log-panel {
+  padding: 22px;
+}
+
+pre {
+  min-height: 220px;
+  margin: 0;
+  white-space: pre-wrap;
+  color: #d8e3f8;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  padding: 16px;
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .hero, .grid, .metrics, .wallet-grid, .kv-grid, .deploy-settings { grid-template-columns: 1fr; }
+}

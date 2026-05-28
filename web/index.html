@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vault 4626 Lab</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero card">
+        <div>
+          <p class="eyebrow">Vault ERC-4626 local</p>
+          <h1>Prueba el vault con botones</h1>
+          <p class="lede">
+            Despliega, deposita, simula yield y redime sobre tu nodo Hardhat local.
+          </p>
+        </div>
+        <div class="status-grid">
+          <div><span>Estado</span><strong id="status-badge">Cargando...</strong></div>
+          <div><span>Assets</span><strong id="total-assets">-</strong></div>
+          <div><span>Shares</span><strong id="total-supply">-</strong></div>
+          <div><span>Paused</span><strong id="paused">-</strong></div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card panel">
+          <h2>Acciones</h2>
+          <div class="deploy-settings">
+            <div class="input-group">
+              <input id="deploy-entry-fee" type="number" min="0" step="1" placeholder="Comisión inicial bps" />
+            </div>
+            <div class="input-group">
+              <input id="deploy-cap" type="number" min="0" step="any" placeholder="Cap inicial" />
+            </div>
+            <div class="input-group">
+              <input id="deploy-fee-recipient" type="text" placeholder="Receptor comisión (opcional)" />
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="deploy">Redesplegar</button>
+            <div class="input-group">
+              <input id="deposit-amount" type="number" min="0" step="any" placeholder="100" />
+              <button id="deposit">Depositar</button>
+            </div>
+            <div class="input-group">
+              <input id="yield-amount" type="number" min="0" step="any" placeholder="50" />
+              <button id="yield">Simular yield</button>
+            </div>
+            <div class="input-group">
+              <input id="redeem-shares" type="number" min="0" step="any" placeholder="50" />
+              <button id="redeem">Redimir</button>
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="pause" class="secondary">Pausar</button>
+            <button id="unpause" class="secondary">Reanudar</button>
+            <div class="input-group">
+              <input id="cap-value" type="number" min="0" step="any" placeholder="1000" />
+              <button id="cap" class="secondary">Establecer cap</button>
+            </div>
+            <button id="refresh" class="ghost">Refrescar</button>
+          </div>
+        </article>
+
+        <article class="card panel">
+          <h2>Parámetros</h2>
+          <label>
+            Depositar / redimir usa la cuenta del deployer local.
+          </label>
+          <label>
+            Ahora puedes probar montos personalizados usando los campos junto a cada botón (valores en unidades enteras, ej. 100 = 100 mUSD).
+          </label>
+        </article>
+      </section>
+
+      <section class="grid metrics">
+        <article class="card metric"><span>Fee recipient</span><strong id="fee-recipient">-</strong></article>
+        <article class="card metric"><span>Entry fee bps</span><strong id="entry-fee">-</strong></article>
+        <article class="card metric"><span>Deposit cap</span><strong id="deposit-cap">-</strong></article>
+        <article class="card metric"><span>Price per share</span><strong id="pps">-</strong></article>
+      </section>
+
+      <section class="grid wallet-grid">
+        <article class="card panel wallet-card">
+          <h2>Tu billetera</h2>
+          <div class="kv-grid">
+            <div><span>Dirección</span><strong id="wallet-address">-</strong></div>
+            <div><span>Saldo en el token</span><strong id="wallet-asset-balance">-</strong></div>
+            <div><span>Shares del vault</span><strong id="wallet-share-balance">-</strong></div>
+            <div><span>Valor actual de tus shares</span><strong id="wallet-position-value">-</strong></div>
+            <div><span>Total aportado</span><strong id="wallet-deposited">-</strong></div>
+            <div><span>Total retirado</span><strong id="wallet-withdrawn">-</strong></div>
+            <div><span>Ganancia/pérdida realizada</span><strong id="wallet-realized-pnl">-</strong></div>
+            <div><span>Valor total actual</span><strong id="wallet-current-value">-</strong></div>
+          </div>
+        </article>
+
+        <article class="card panel wallet-card">
+          <h2>Receptor de comisiones</h2>
+          <div class="kv-grid">
+            <div><span>Dirección</span><strong id="fee-recipient-address">-</strong></div>
+            <div><span>Saldo en el token</span><strong id="fee-recipient-asset-balance">-</strong></div>
+            <div><span>Shares acumuladas</span><strong id="fee-recipient-share-balance">-</strong></div>
+            <div><span>Valor estimado de esas shares</span><strong id="fee-recipient-position-value">-</strong></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="card log-panel">
+        <h2>Log</h2>
+        <pre id="log"></pre>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+  </html>
