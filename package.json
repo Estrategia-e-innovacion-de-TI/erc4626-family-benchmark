@@ -1,5 +1,5 @@
 {
-  "name": "vault-4626-mvp",
+  "name": "erc4626-vault-standards-benchmark",
   "version": "1.0.0",
   "private": true,
   "scripts": {

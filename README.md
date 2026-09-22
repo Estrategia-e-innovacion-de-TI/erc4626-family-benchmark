@@ -1,23 +1,27 @@
-# Vault ERC-4626 y Benchmark de la Familia de Estándares de Vaults
+# Benchmark: Familia de Estándares ERC-4626 para Vaults
 
-Repositorio con dos partes:
+Repositorio de investigación/comparación: implementa el **caso base** de ERC-4626 y otros 4 EIPs
+que oficialmente lo extienden, bajo las mismas condiciones, para evidenciar (con tests y gas) qué
+añade cada uno y qué trade-off de seguridad introduce. No es un producto; es un laboratorio para
+sacar conclusiones fundamentadas sobre cuándo usar cada estándar.
 
-1. **MVP de vault**: una implementación de referencia de ERC-4626 (`TokenizedVault.sol`) con
-   activo mintable de prueba, fuente de rentabilidad simulada, scripts de despliegue y una UI
-   web local para depositar/retirar y observar el vault en vivo.
-2. **Benchmark académico** (`contracts/standards/`): implementaciones mínimas y aisladas de los
-   demás EIPs que realmente extienden ERC-4626 (ERC-5143, ERC-6229, ERC-7535, ERC-7575),
-   comparadas entre sí en tests y en un reporte de gas. Excluye a propósito la familia ERC-7540
-   (vaults asíncronos). Ver el detalle en [contracts/standards/README.md](contracts/standards/README.md).
+- **Caso base** (`TokenizedVault.sol`): ERC-4626 de referencia, sin extensiones, usado como control
+  del benchmark. Trae activo mintable de prueba, fuente de rentabilidad simulada, scripts de
+  despliegue y una UI web local para depositar/retirar y observar el vault en vivo.
+- **Estándares comparados** (`contracts/standards/`): implementaciones mínimas y aisladas de
+  ERC-5143, ERC-6229, ERC-7535 y ERC-7575, cada una probada, documentada y disponible en la misma
+  UI web. Excluye a propósito la familia ERC-7540 (vaults asíncronos). Ver el detalle completo en
+  [contracts/standards/README.md](contracts/standards/README.md).
 
 ## Incluye
 
-- Activo subyacente ERC20 propio y mintable para pruebas (`MockAsset.sol`).
-- Vault ERC-4626 de referencia sin comisiones (`TokenizedVault.sol`).
-- Fuente de rentabilidad simulada separada de la lógica del vault (`MockYieldSource.sol`).
-- Pruebas de depósito, conversión, yield y retiro parcial.
-- Benchmark académico de la familia de estándares ERC-4626 (ver más abajo).
-- UI web local y scripts de despliegue para localhost/Sepolia.
+- Caso base ERC-4626 sin comisiones (`TokenizedVault.sol`) + activo mintable (`MockAsset.sol`) +
+  fuente de rentabilidad simulada (`MockYieldSource.sol`).
+- Los 4 estándares comparados: ERC-5143 (slippage), ERC-6229 (lock-in), ERC-7535 (ETH nativo),
+  ERC-7575 (multi-asset).
+- Suite de tests por estándar (~94% cobertura de statements) y un script de benchmark de gas.
+- UI web local con una página por caso: el control (`index.html`) y los 4 estándares comparados
+  (`benchmark.html`), ambas contra tu nodo Hardhat local.
 
 ## Comandos
 
@@ -36,15 +40,9 @@ npm run benchmark
 
 ## Benchmark de estándares ERC-4626
 
-Un **benchmark** aquí significa: implementar cada estándar por separado, con el mismo activo
-y las mismas condiciones de partida, para poder comparar de forma objetiva qué añade cada uno
-sobre ERC-4626 base, cuánto cuesta en gas y qué riesgo de seguridad introduce. No es una
-opinión sobre cuál es "mejor"; es la evidencia (tests + gas) para que cada quien saque su
-propia conclusión sobre cuándo usar cada uno.
-
-`contracts/standards/` compara ERC-4626 base contra otros 4 EIPs que oficialmente lo extienden
-(`Requires: EIP-4626` verificado en eips.ethereum.org). Se excluye a propósito toda la familia
-ERC-7540 (vaults asíncronos) y lo que dependa de ella.
+`contracts/standards/` compara el caso base contra otros 4 EIPs que oficialmente extienden
+ERC-4626 (`Requires: EIP-4626` verificado en eips.ethereum.org). Se excluye a propósito toda la
+familia ERC-7540 (vaults asíncronos) y lo que dependa de ella.
 
 | Estándar | Qué problema resuelve |
 |---|---|
@@ -62,6 +60,7 @@ exacta de comparación.
 npx hardhat test test/standards
 npx hardhat coverage --testfiles "test/standards/*.test.js"
 npm run benchmark
+npx hardhat run scripts/deploy-standards.js --network localhost
 ```
 
 ## Testnet Local En Tu PC
@@ -75,10 +74,15 @@ npm run benchmark
 
 1. Abre una terminal y ejecuta `npm run node:local`.
 2. En otra terminal, ejecuta `npm run web:local`.
-3. Abre `http://127.0.0.1:3000` en el navegador.
-4. Usa los botones para desplegar, depositar, simular rentabilidad, pausar, reanudar y redimir.
+3. Abre `http://127.0.0.1:3000` (caso base ERC-4626) o `http://127.0.0.1:3000/benchmark.html`
+   (los 4 estándares comparados; primero pulsa "Desplegar benchmark" ahí mismo).
+4. En el caso base: depositar, simular rentabilidad, pausar, reanudar y redimir. En el benchmark:
+   un panel por estándar con solo los botones necesarios para demostrar su mecanismo específico.
 
 ## Sepolia
+
+Solo aplica al caso base (`TokenizedVault.sol`); los 4 estándares comparados son para
+experimentación local (`localhost`), no se despliegan en testnet.
 
 1. Copia `.env.example` a `.env` y completa `SEPOLIA_RPC_URL`, `SEPOLIA_PRIVATE_KEY` y `ETHERSCAN_API_KEY`.
 2. Ejecuta `npm run deploy:sepolia` para desplegar `MockAsset`, `TokenizedVault` y `MockYieldSource`.
@@ -86,4 +90,6 @@ npm run benchmark
 
 ## Nota
 
-Esto es un MVP para testnet o laboratorio. No incluye hardening de producción, controles de acceso avanzados ni estrategias de yield reales.
+Este repositorio es un benchmark académico/laboratorio, no un producto de producción. Ninguno
+de los 5 contratos fue auditado; cada uno documenta en su NatSpec el trade-off de seguridad que
+asume a cambio de mantenerse minimalista.

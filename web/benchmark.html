@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Benchmark de estándares ERC-4626</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="nav-tabs">
+        <a href="/index.html">Caso base (ERC-4626)</a>
+        <a href="/benchmark.html" class="active">Benchmark (4 estándares)</a>
+      </nav>
+
+      <section class="hero card">
+        <div>
+          <p class="eyebrow">Benchmark académico</p>
+          <h1>Familia de estándares ERC-4626</h1>
+          <p class="lede">
+            Cada panel demuestra el mecanismo central de un EIP distinto, sobre tu nodo Hardhat local.
+            Detalle completo en <code>contracts/standards/README.md</code>.
+          </p>
+        </div>
+        <div class="button-row">
+          <button id="deploy">Desplegar benchmark</button>
+          <button id="refresh" class="ghost">Refrescar</button>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card panel standard-card accent-yellow">
+          <h2>ERC-5143 <span class="standard-badge">Stagnant</span></h2>
+          <p class="lede">Protección de slippage: revierte si el depósito recibe menos shares de las esperadas.</p>
+          <div class="button-row">
+            <div class="input-group">
+              <input id="e5143-amount" type="number" min="0" step="any" placeholder="Assets (100)" />
+              <input id="e5143-min-shares" type="number" min="0" step="any" placeholder="minShares (0 = sin protección)" />
+              <button id="e5143-deposit">Depositar</button>
+            </div>
+          </div>
+          <div class="kv-grid">
+            <div><span>Tus shares</span><strong id="e5143-shares">-</strong></div>
+          </div>
+        </article>
+
+        <article class="card panel standard-card accent-orange">
+          <h2>ERC-6229 <span class="standard-badge">Draft</span></h2>
+          <p class="lede">Periodo de bloqueo por rondas: mientras está bloqueado solo se puede agendar; se liquida al desbloquear.</p>
+          <div class="button-row">
+            <button id="e6229-lock" class="secondary">Bloquear</button>
+            <button id="e6229-unlock" class="secondary">Desbloquear</button>
+          </div>
+          <div class="button-row">
+            <div class="input-group">
+              <input id="e6229-amount" type="number" min="0" step="any" placeholder="Assets a agendar (100)" />
+              <button id="e6229-schedule">Agendar depósito</button>
+            </div>
+            <button id="e6229-settle">Liquidar depósito</button>
+          </div>
+          <div class="kv-grid">
+            <div><span>Bloqueado</span><strong id="e6229-locked">-</strong></div>
+            <div><span>Ronda</span><strong id="e6229-round">-</strong></div>
+            <div><span>Agendado (tú)</span><strong id="e6229-scheduled">-</strong></div>
+            <div><span>Tus shares</span><strong id="e6229-shares">-</strong></div>
+          </div>
+        </article>
+
+        <article class="card panel standard-card accent-pink">
+          <h2>ERC-7535 <span class="standard-badge">Final</span></h2>
+          <p class="lede">ETH nativo: deposita directamente, sin approve ni token ERC-20 intermedio.</p>
+          <div class="button-row">
+            <div class="input-group">
+              <input id="e7535-amount" type="number" min="0" step="any" placeholder="ETH (1)" />
+              <button id="e7535-deposit">Depositar ETH</button>
+            </div>
+          </div>
+          <div class="kv-grid">
+            <div><span>Tus shares (ETH)</span><strong id="e7535-shares">-</strong></div>
+            <div><span>ETH en el vault</span><strong id="e7535-vault-balance">-</strong></div>
+          </div>
+        </article>
+
+        <article class="card panel standard-card accent-cyan">
+          <h2>ERC-7575 <span class="standard-badge">Final</span></h2>
+          <p class="lede">Multi-asset: dos vaults, un solo token de shares compartido.</p>
+          <div class="button-row">
+            <div class="input-group">
+              <input id="e7575-amount" type="number" min="0" step="any" placeholder="Assets (100)" />
+              <button id="e7575-deposit-a">Depositar en Vault A (Token A)</button>
+              <button id="e7575-deposit-b">Depositar en Vault B (Token B)</button>
+            </div>
+          </div>
+          <div class="kv-grid">
+            <div><span>Shares compartidas</span><strong id="e7575-shares">-</strong></div>
+            <div><span>Saldo Token A</span><strong id="e7575-token-a">-</strong></div>
+            <div><span>Saldo Token B</span><strong id="e7575-token-b">-</strong></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="card log-panel">
+        <h2>Log</h2>
+        <pre id="log"></pre>
+      </section>
+
+      <p class="footnote">
+        Excluye ERC-7540 (vaults asíncronos) y todo lo que dependa de él · ver
+        <code>contracts/standards/README.md</code> para la ficha completa de cada estándar
+      </p>
+    </main>
+    <script src="/benchmark.js"></script>
+  </body>
+</html>

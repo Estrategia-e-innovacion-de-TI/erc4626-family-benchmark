@@ -9,6 +9,12 @@ function formatUnits(value) {
 }
 
 async function pause(rl, message) {
+  // Sin TTY (ej. corrido desde un runner automatizado) no hay a quien pedirle Enter; solo continúa.
+  if (!input.isTTY) {
+    console.log(message.trim());
+    return;
+  }
+
   await rl.question(`\n${message}`);
 }
 

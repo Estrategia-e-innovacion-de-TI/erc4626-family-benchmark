@@ -11,6 +11,7 @@ const HARDHAT_PRIVATE_KEY =
 const RPC_URL = process.env.WEB_RPC_URL || "http://127.0.0.1:8545";
 const DEPLOYMENT_PATH = path.join(__dirname, "..", "deployments", "localhost.json");
 const METRICS_PATH = path.join(__dirname, "..", "deployments", "localhost.metrics.json");
+const STANDARDS_DEPLOYMENT_PATH = path.join(__dirname, "..", "deployments", "localhost.standards.json");
 
 function readArtifact(relativePath) {
   const artifactPath = path.join(__dirname, "..", "artifacts", relativePath);
@@ -22,6 +23,15 @@ const ABIS = {
   asset: readArtifact(path.join("contracts", "MockAsset.sol", "MockAsset.json")),
   vault: readArtifact(path.join("contracts", "TokenizedVault.sol", "TokenizedVault.json")),
   yieldSource: readArtifact(path.join("contracts", "MockYieldSource.sol", "MockYieldSource.json")),
+};
+
+const STANDARDS_ABIS = {
+  asset: ABIS.asset,
+  erc5143: readArtifact(path.join("contracts", "standards", "ERC5143Vault.sol", "ERC5143Vault.json")),
+  erc6229: readArtifact(path.join("contracts", "standards", "ERC6229Vault.sol", "ERC6229Vault.json")),
+  erc7535: readArtifact(path.join("contracts", "standards", "ERC7535Vault.sol", "ERC7535Vault.json")),
+  share: readArtifact(path.join("contracts", "standards", "ERC7575Share.sol", "ERC7575Share.json")),
+  vault7575: readArtifact(path.join("contracts", "standards", "ERC7575Vault.sol", "ERC7575Vault.json")),
 };
 
 function format(value) {
@@ -77,6 +87,77 @@ function loadDeployment() {
   }
 
   return JSON.parse(fs.readFileSync(DEPLOYMENT_PATH, "utf8"));
+}
+
+function loadStandardsDeployment() {
+  if (!fs.existsSync(STANDARDS_DEPLOYMENT_PATH)) {
+    return null;
+  }
+
+  return JSON.parse(fs.readFileSync(STANDARDS_DEPLOYMENT_PATH, "utf8"));
+}
+
+function createStandardsContext(deployment) {
+  const provider = new ethers.JsonRpcProvider(RPC_URL);
+  const signer = new ethers.NonceManager(new ethers.Wallet(HARDHAT_PRIVATE_KEY, provider));
+
+  return {
+    signer,
+    deployment,
+    assetSingle: new ethers.Contract(deployment.assetSingle, STANDARDS_ABIS.asset, signer),
+    tokenA: new ethers.Contract(deployment.tokenA, STANDARDS_ABIS.asset, signer),
+    tokenB: new ethers.Contract(deployment.tokenB, STANDARDS_ABIS.asset, signer),
+    erc5143: new ethers.Contract(deployment.erc5143, STANDARDS_ABIS.erc5143, signer),
+    erc6229: new ethers.Contract(deployment.erc6229, STANDARDS_ABIS.erc6229, signer),
+    erc7535: new ethers.Contract(deployment.erc7535, STANDARDS_ABIS.erc7535, signer),
+    share: new ethers.Contract(deployment.share, STANDARDS_ABIS.share, signer),
+    vaultA: new ethers.Contract(deployment.vaultA, STANDARDS_ABIS.vault7575, signer),
+    vaultB: new ethers.Contract(deployment.vaultB, STANDARDS_ABIS.vault7575, signer),
+  };
+}
+
+async function withStandardsContracts(handler) {
+  const deployment = loadStandardsDeployment();
+  if (!deployment) {
+    throw new Error("Primero despliega el benchmark con el boton 'Desplegar benchmark'.");
+  }
+
+  return handler(createStandardsContext(deployment));
+}
+
+async function getStandardsStatus() {
+  const deployment = loadStandardsDeployment();
+  if (!deployment) {
+    return { deployed: false };
+  }
+
+  const ctx = createStandardsContext(deployment);
+  const user = await ctx.signer.getAddress();
+
+  return {
+    deployed: true,
+    user,
+    erc5143: {
+      assetBalance: format(await ctx.assetSingle.balanceOf(user)),
+      shareBalance: format(await ctx.erc5143.balanceOf(user)),
+    },
+    erc6229: {
+      assetBalance: format(await ctx.assetSingle.balanceOf(user)),
+      shareBalance: format(await ctx.erc6229.balanceOf(user)),
+      isLocked: await ctx.erc6229.isLocked(),
+      vaultRound: (await ctx.erc6229.vaultRound()).toString(),
+      scheduledDeposit: format(await ctx.erc6229.getScheduledDeposits(user)),
+    },
+    erc7535: {
+      ethShareBalance: format(await ctx.erc7535.balanceOf(user)),
+      vaultEthBalance: format(await ctx.erc7535.totalAssets()),
+    },
+    erc7575: {
+      tokenABalance: format(await ctx.tokenA.balanceOf(user)),
+      tokenBBalance: format(await ctx.tokenB.balanceOf(user)),
+      sharedShareBalance: format(await ctx.share.balanceOf(user)),
+    },
+  };
 }
 
 function createContext(deployment) {
@@ -342,6 +423,155 @@ async function bootstrap() {
         const tx = await vault.connect(signer).setDepositCap(cap);
         const receipt = await tx.wait();
         return { status: "ok", txHash: receipt.hash, depositCap: (await vault.depositCap()).toString() };
+      });
+
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/standards/status", async (_req, res) => {
+    try {
+      res.json(await getStandardsStatus());
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/standards/deploy", async (_req, res) => {
+    try {
+      execSync("npx hardhat run scripts/deploy-standards.js --network localhost", {
+        cwd: path.join(__dirname, ".."),
+        stdio: "inherit",
+        env: process.env,
+        shell: true,
+      });
+
+      if (!loadStandardsDeployment()) {
+        throw new Error("Standards deployment manifest was not created");
+      }
+
+      res.json(await getStandardsStatus());
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/standards/5143/deposit", async (req, res) => {
+    try {
+      const result = await withStandardsContracts(async ({ signer, assetSingle, erc5143 }) => {
+        const user = await signer.getAddress();
+        const amount = toBigInt(req.body.amount || 100);
+        const minShares = toBigInt(req.body.minShares || 0);
+
+        await (await assetSingle.approve(await erc5143.getAddress(), amount)).wait();
+        const tx = await erc5143["deposit(uint256,address,uint256)"](amount, user, minShares);
+        const receipt = await tx.wait();
+
+        return { status: "ok", txHash: receipt.hash, shareBalance: format(await erc5143.balanceOf(user)) };
+      });
+
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/standards/6229/lock", async (_req, res) => {
+    try {
+      const result = await withStandardsContracts(async ({ erc6229 }) => {
+        const tx = await erc6229.lock();
+        const receipt = await tx.wait();
+        return { status: "ok", txHash: receipt.hash, isLocked: await erc6229.isLocked() };
+      });
+
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/standards/6229/unlock", async (_req, res) => {
+    try {
+      const result = await withStandardsContracts(async ({ erc6229 }) => {
+        const tx = await erc6229.unlock();
+        const receipt = await tx.wait();
+        return { status: "ok", txHash: receipt.hash, isLocked: await erc6229.isLocked() };
+      });
+
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/standards/6229/schedule-deposit", async (req, res) => {
+    try {
+      const result = await withStandardsContracts(async ({ signer, assetSingle, erc6229 }) => {
+        const user = await signer.getAddress();
+        const amount = toBigInt(req.body.amount || 100);
+
+        await (await assetSingle.approve(await erc6229.getAddress(), amount)).wait();
+        const tx = await erc6229.scheduleDeposit(amount);
+        const receipt = await tx.wait();
+
+        return { status: "ok", txHash: receipt.hash, scheduledDeposit: format(await erc6229.getScheduledDeposits(user)) };
+      });
+
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/standards/6229/settle-deposit", async (req, res) => {
+    try {
+      const result = await withStandardsContracts(async ({ signer, erc6229 }) => {
+        const user = await signer.getAddress();
+        const tx = await erc6229.settleDeposits(user);
+        const receipt = await tx.wait();
+        return { status: "ok", txHash: receipt.hash, shareBalance: format(await erc6229.balanceOf(user)) };
+      });
+
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/standards/7535/deposit", async (req, res) => {
+    try {
+      const result = await withStandardsContracts(async ({ signer, erc7535 }) => {
+        const user = await signer.getAddress();
+        const amount = toBigInt(req.body.amount || 1);
+
+        const tx = await erc7535.deposit(0, user, { value: amount });
+        const receipt = await tx.wait();
+
+        return { status: "ok", txHash: receipt.hash, ethShareBalance: format(await erc7535.balanceOf(user)) };
+      });
+
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/standards/7575/deposit", async (req, res) => {
+    try {
+      const result = await withStandardsContracts(async ({ signer, tokenA, tokenB, vaultA, vaultB, share }) => {
+        const user = await signer.getAddress();
+        const amount = toBigInt(req.body.amount || 100);
+        const which = req.body.which === "B" ? "B" : "A";
+        const token = which === "A" ? tokenA : tokenB;
+        const vault = which === "A" ? vaultA : vaultB;
+
+        await (await token.approve(await vault.getAddress(), amount)).wait();
+        const tx = await vault.deposit(amount, user);
+        const receipt = await tx.wait();
+
+        return { status: "ok", txHash: receipt.hash, sharedShareBalance: format(await share.balanceOf(user)) };
       });
 
       res.json(result);

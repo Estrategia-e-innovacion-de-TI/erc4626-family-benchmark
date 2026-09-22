@@ -31,6 +31,10 @@ npm run benchmark
 
 # Cobertura de los contratos de este directorio
 npx hardhat coverage --testfiles "test/standards/*.test.js"
+
+# Desplegar los 5 contratos en localhost (lo mismo que usa el botón "Desplegar
+# benchmark" de la UI web en web/benchmark.html)
+npx hardhat run scripts/deploy-standards.js --network localhost
 ```
 
 ## Metodología

@@ -3,17 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vault 4626 Lab</title>
+    <title>ERC-4626 base · Benchmark de estándares de vaults</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <main class="shell">
+      <nav class="nav-tabs">
+        <a href="/index.html" class="active">Caso base (ERC-4626)</a>
+        <a href="/benchmark.html">Benchmark (4 estándares)</a>
+      </nav>
+
       <section class="hero card">
         <div>
-          <p class="eyebrow">Vault ERC-4626 local</p>
-          <h1>Prueba el vault con botones</h1>
+          <p class="eyebrow">Benchmark académico · Caso base</p>
+          <h1>ERC-4626 sin extensiones: el control del benchmark</h1>
           <p class="lede">
-            Despliega, deposita, simula yield y redime sobre tu nodo Hardhat local.
+            Este vault no añade ninguna característica de estándar adicional; existe para servir como
+            punto de comparación (deposit/withdraw, fees, pausa, cap) frente a los 4 estándares que sí
+            extienden ERC-4626 en la página del benchmark.
           </p>
         </div>
         <div class="status-grid">
@@ -21,6 +28,9 @@
           <div><span>Assets</span><strong id="total-assets">-</strong></div>
           <div><span>Shares</span><strong id="total-supply">-</strong></div>
           <div><span>Paused</span><strong id="paused">-</strong></div>
+        </div>
+        <div class="button-row">
+          <a class="ghost-link" href="/benchmark.html">Ir a los 4 estándares comparados &rarr;</a>
         </div>
       </section>
 
@@ -112,6 +122,11 @@
         <h2>Log</h2>
         <pre id="log"></pre>
       </section>
+
+      <p class="footnote">
+        Caso base del benchmark académico de estándares ERC-4626 · ver
+        <a href="https://github.com/Estrategia-e-innovacion-de-TI/ERC-4626-CDToken#readme">documentación completa</a>
+      </p>
     </main>
     <script src="/app.js"></script>
   </body>
