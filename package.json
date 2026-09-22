@@ -10,7 +10,8 @@
     "node:local": "hardhat node",
     "deploy:local": "hardhat run scripts/deploy-sepolia.js --network localhost",
     "deploy:sepolia": "hardhat run scripts/deploy-sepolia.js --network sepolia",
-    "web:local": "node scripts/web-server.js"
+    "web:local": "node scripts/web-server.js",
+    "benchmark": "hardhat run scripts/benchmark.js"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.2",

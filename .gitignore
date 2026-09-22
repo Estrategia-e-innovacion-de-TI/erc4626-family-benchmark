@@ -2,6 +2,7 @@ node_modules
 artifacts
 cache
 coverage
+coverage.json
 typechain-types
 .env
 .DS_Store
